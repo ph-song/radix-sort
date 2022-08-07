@@ -31,8 +31,8 @@ def analyze(results: List[List], roster: int, score: int):
     """
 
     #sort team name in lexicographical order
-    results = count_sort_team(results, roster)
-    results = swap_team_score(results, roster)
+    count_sort_team(results, roster)
+    swap_team_score(results, roster)
 
     #sort according to score & team 
     results = radix_sort_ABC(results, roster, 0)
@@ -73,12 +73,6 @@ def count_sort_team(results: List[List], roster: int) -> None:
             results[match][2] = 100 - results[match][2]
     """
 
-def swap_team_score(results):
-    for match in range(len(results)):
-        if results[match][2]<50:
-            results[match][0], results[match][1] = results[match][1], results[match][0]
-            results[match][2] = 100 - results[match][2]
-
 def count_sort_team_char(team: str, roster: int) -> str:
     """
     sort team name in lexicographical order
@@ -115,6 +109,12 @@ def count_sort_team_char(team: str, roster: int) -> str:
         position[key] += 1
     
     return ''.join(output)
+
+def swap_team_score(results):
+    for match in range(len(results)):
+        if results[match][2]<50:
+            results[match][0], results[match][1] = results[match][1], results[match][0]
+            results[match][2] = 100 - results[match][2]
 
 def radix_sort_ABC(results: List[List], roster: int, col: int):
     """
@@ -169,7 +169,7 @@ def radix_sort_123(results: List[List], col: int =2):
     roster = 10
     output = [0]*len(results)
 
-    for kth_dgt in range(2): #O(M) ***assume max score 50 - 00
+    for kth_dgt in range(3): #O(M) ***assume max score 50 - 00, 2 or 3?
         count = [0]*roster
         position = [0]*roster
 
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     a = 'BAA'
 
 
-    results = [['AAB', 'AAB', 35], ['AAB', 'BBA', 49], ['BAB', 'BAB', 42],
+    results = [['AAB', 'AAB', 100], ['AAB', 'BBA', 49], ['BAB', 'BAB', 42],
                 ['AAA', 'AAA', 38], ['BAB', 'BAB', 36], ['BAB', 'BAB', 36],
                 ['ABA', 'BBA', 57], ['BBB', 'BBA', 32], ['BBA', 'BBB', 49],
                 ['BBA', 'ABB', 55], ['AAB', 'AAA', 58], ['ABA', 'AAA', 46],
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
     count_sort_team(results,roster)
     swap_team_score(results)
-    #print(results)
+
     results = radix_sort_ABC(results, 2, 1)
     results = radix_sort_ABC(results, 2, 0)
     results = radix_sort_123(results, 2)
