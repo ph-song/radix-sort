@@ -32,18 +32,49 @@ def analyze(results: List[List], roster: int, score: int):
 
     #sort team name in lexicographical order
     count_sort_team(results, roster)
-    swap_team_score(results, roster)
 
     #sort according to score & team 
     results = radix_sort_ABC(results, roster, 0)
     results = radix_sort_ABC(results, roster, 1)
 
+    #find matches that that has closest score
+    searchedmatches = search_matches(results, score)
+
     #find top 10 team
+    top10matches = find_top10(results)
 
-    #find matches that score >= score
+    return [top10matches, searchedmatches]
+
+def search_matches(results: List[List], score) -> List:
+    searchedmatches = []
+    swap_team_score(results, score<50)
+    results = radix_sort_123(results)
+
+    min_diff = 100
+    for match in results: #O(N)
+        diff = abs(match[2] - score)
+        if diff < min_diff:
+            min_diff = diff
+
+    for match in results: #O(N)
+        if abs(match[2] - score) == min_diff:
+            if not searchedmatches:
+                searchedmatches += match
+            elif match != search_matches[len(search_matches)-1]:
+                searchedmatches += match
 
 
-    pass
+def find_top10(results: List[List]) -> List:
+    swap_team_score(results)
+    results = radix_sort_123(results)
+    top10matches = []
+    for i in results: #O(N)
+        if len(top10matches) >= 10:
+            break
+        elif not top10matches or i != top10matches[len(top10matches)-1]: #complexity O(M)
+            top10matches += i
+
+    return top10matches
 
 def count_sort_team(results: List[List], roster: int) -> None:
     """
@@ -110,9 +141,9 @@ def count_sort_team_char(team: str, roster: int) -> str:
     
     return ''.join(output)
 
-def swap_team_score(results):
+def swap_team_score(results, below_50: bool = True):
     for match in range(len(results)):
-        if results[match][2]<50:
+        if (results[match][2]<50 and below_50) or (results[match][2]>50 and not below_50):
             results[match][0], results[match][1] = results[match][1], results[match][0]
             results[match][2] = 100 - results[match][2]
 
@@ -194,6 +225,10 @@ def radix_sort_123(results: List[List], col: int =2):
     return output
 
 if __name__ == "__main__":
+    #import doctest
+    #doctest.testmod(verbose=True)
+
+
     roster = 2
     a = 'BAA'
 
