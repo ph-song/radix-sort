@@ -52,6 +52,7 @@ def search_matches(results: List[List], score) -> List:
 
     min_diff = 100
     for match in results: #O(N)
+        print(match)
         diff = abs(match[2] - score)
         if diff < min_diff:
             min_diff = diff
@@ -143,9 +144,12 @@ def count_sort_team_char(team: str, roster: int) -> str:
     
     return ''.join(output)
 
-def swap_team_score(results, below_50: bool = True):
+def swap_team_score(results, below_50: bool = False):
+    """
+    below_50: want it to be below 50
+    """
     for match in range(len(results)):
-        if (results[match][2]<50 and below_50) or (results[match][2]>50 and not below_50):
+        if (results[match][2]>50 and below_50) or (results[match][2]<50 and not below_50):
             results[match][0], results[match][1] = results[match][1], results[match][0]
             results[match][2] = 100 - results[match][2]
 
