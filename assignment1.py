@@ -59,9 +59,11 @@ def search_matches(results: List[List], score) -> List:
     for match in results: #O(N)
         if abs(match[2] - score) == min_diff:
             if not searchedmatches:
-                searchedmatches += match
-            elif match != search_matches[len(search_matches)-1]:
-                searchedmatches += match
+                searchedmatches.append(match)
+            elif match != searchedmatches[len(searchedmatches)-1]:
+                searchedmatches.append(match)
+    
+    return searchedmatches
 
 
 def find_top10(results: List[List]) -> List:
@@ -72,7 +74,7 @@ def find_top10(results: List[List]) -> List:
         if len(top10matches) >= 10:
             break
         elif not top10matches or i != top10matches[len(top10matches)-1]: #complexity O(M)
-            top10matches += i
+            top10matches.append(i)
 
     return top10matches
 
@@ -233,7 +235,7 @@ if __name__ == "__main__":
     a = 'BAA'
 
 
-    results = [['AAB', 'AAB', 100], ['AAB', 'BBA', 49], ['BAB', 'BAB', 42],
+    results = [ ['AAB', 'AAB', 35], ['AAB', 'BBA', 49], ['BAB', 'BAB', 42],
                 ['AAA', 'AAA', 38], ['BAB', 'BAB', 36], ['BAB', 'BAB', 36],
                 ['ABA', 'BBA', 57], ['BBB', 'BBA', 32], ['BBA', 'BBB', 49],
                 ['BBA', 'ABB', 55], ['AAB', 'AAA', 58], ['ABA', 'AAA', 46],
@@ -246,8 +248,10 @@ if __name__ == "__main__":
     count_sort_team(results,roster)
     swap_team_score(results)
 
+    """
     results = radix_sort_ABC(results, 2, 1)
     results = radix_sort_ABC(results, 2, 0)
     results = radix_sort_123(results, 2)
-    print(results)
-
+    """
+    #print(results)
+    print(analyze(results,2, 64))
