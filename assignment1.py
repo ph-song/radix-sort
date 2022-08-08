@@ -39,20 +39,19 @@ def analyze(results: List[List], roster: int, score: int):
 
     #find matches that that has closest score
     searchedmatches = search_matches(results, score)
-
+    print(searchedmatches,2222)
     #find top 10 team
     top10matches = find_top10(results)
-
+    print(searchedmatches,3333)
     return [top10matches, searchedmatches]
 
 def search_matches(results: List[List], score) -> List:
     searchedmatches = []
-    swap_team_score(results, score<50)
+    swap_team_score(results, score<=50)
     results = radix_sort_123(results)
 
     min_diff = 100
     for match in results: #O(N)
-        print(match)
         diff = abs(match[2] - score)
         if diff < min_diff:
             min_diff = diff
@@ -61,9 +60,9 @@ def search_matches(results: List[List], score) -> List:
         if abs(match[2] - score) == min_diff:
             if not searchedmatches:
                 searchedmatches.append(match)
-            elif match != searchedmatches[len(searchedmatches)-1]:
+            elif match != searchedmatches[len(searchedmatches)-1] and match[2]>=score:
                 searchedmatches.append(match)
-    
+    print(searchedmatches,1111)
     return searchedmatches
 
 
@@ -258,4 +257,4 @@ if __name__ == "__main__":
     results = radix_sort_123(results, 2)
     """
     #print(results)
-    print(analyze(results,2, 64))
+    print(analyze(results,2, 0))
