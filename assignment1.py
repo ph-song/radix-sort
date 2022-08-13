@@ -8,20 +8,19 @@ __author__ = "Pin Hen Song"
 from typing import List
 from math import pow
 
-
 #N is the number of matches within results.
 #M is the number of characters within a team for each match.
 
 
-def analyse(results: List[List], roster: int, score: int):
+def analyse(results: List[List], roster: int, score: int) ->List[List]:
     """
     :input:
         arg1: results, list of matches 
         arg2: roster, length of character set
-        arg2: score, 
+        arg2: score, target score
     :return: [top10matches, searchedmatches]
-    :time complexity:
-    :aux space complexity:
+    :time complexity: O(NM), dominant by sort_team(), radix_sort_ABC()
+    :aux space complexity: O(NM), dominant by size of input, "results"
 
     >>> results = [['AAB', 'AAB', 35], ['AAB', 'BBA', 49], ['BAB', 'BAB', 42], ['AAA', 'AAA', 38], ['BAB', 'BAB', 36],
     ...             ['BAB', 'BAB', 36], ['ABA', 'BBA', 57], ['BBB', 'BBA', 32], ['BBA', 'BBB', 49], ['BBA', 'ABB', 55],
@@ -53,17 +52,17 @@ def analyse(results: List[List], roster: int, score: int):
     """
 
     #sort team name in lexicographical order
-    results = sort_team(results, roster)
+    results = sort_team(results, roster) #O(NM)
 
     #sort according to team 
-    results = radix_sort_ABC(results, roster, 0)
-    results = radix_sort_ABC(results, roster, 1)
+    results = radix_sort_ABC(results, roster, 0) #O(NM)
+    results = radix_sort_ABC(results, roster, 1) #O(NM)
 
-    #find matches that that has closest score
-    searchedmatches = search_matches(results, score)
+    #find matches that that has score that bigger or equal and closest to target score 
+    searchedmatches = search_matches(results, score) #O(N)
 
     #find top 10 team
-    top10matches = find_top10(results)
+    top10matches = find_top10(results) #O(N)
 
     return [top10matches, searchedmatches]
 
@@ -75,9 +74,9 @@ def sort_team(results: List[List], roster: int) -> List:
         arg1: results, results of matches 
         arg2: roster
     :time complexity: 
-        O(NM), loop through matches cost N, and count sort each team name cost M,
+        O(NM), loop through matches cost N, and count sort each team name cost M
         where N is number of matches, i.e. len(results), M is number of character of team
-    :aux space complexity:
+    :aux space complexity: O(NM), dominant by ret
 
     """
     ret = results.copy() #O(N)
@@ -96,7 +95,7 @@ def count_sort_team_char(team: str, roster: int) -> str:
         arg2: roster, number of possible letters
     :return: sorted team name
     :time complexity: O(M), where M is number of character of team, i.e. len(team)
-    :aux space complexity: O(M), which is dominant by the size of output
+    :aux space complexity: O(NM), which is dominant by the size of output, where N is number of matches i.e. len(results)
     """
     #r = roster, M = len(team)
 
@@ -122,6 +121,7 @@ def count_sort_team_char(team: str, roster: int) -> str:
 
 def search_matches(results: List[List], score) -> List:
     """
+    
     find matches in results which score bigger or equal than target score
 
     :input:
@@ -129,7 +129,7 @@ def search_matches(results: List[List], score) -> List:
         arg2: roster, number of possible letters
     :return: list of matches which score bigger or equal than target score
     :time complexity: O(N), where N is number of matches i.e. len(results)
-    :aux space complexity: O(N), dominant by "results", where N is number of matches i.e. len(results)
+    :aux space complexity: O(NM), dominant by "results", where M is number of character of team, i.e. len(team)
     """
     searchedmatches = [] #return list
 
@@ -148,7 +148,7 @@ def search_matches(results: List[List], score) -> List:
     for match in results: #O(N)
         if abs(match[2] - score) == min_diff and match[2]>=score:
             if not searchedmatches: #add to return list if resturn list is empty
-                searchedmatches.append(match.copy()) #O(N), worst case scenario: all case matches ****
+                searchedmatches.append(match.copy())
             elif match != searchedmatches[len(searchedmatches)-1]: #check if it's duplicated match
                 searchedmatches.append(match.copy())
 
@@ -163,11 +163,12 @@ def find_top10(results: List[List]) -> List:
         arg1: results, results of matches 
     :return: list of top 10 highest score matches
     :time complexity: O(N), where N is number of matches i.e. len(results)
-    :aux space complexity: O(N), dominant by "results", where N is number of matches i.e. len(results)
+    :aux space complexity: O(NM), dominant by "results", where M is number of character of team, i.e. len(team)
     """
 
     results = flip_team_score(results) #O(N)
     results = radix_sort_123(results) #O(N)
+
     top10matches = []
     for i in results: #O(N)
         if len(top10matches) >= 10:
@@ -186,7 +187,7 @@ def flip_team_score(results, below_50: bool = False)->List:
         arg2: below_50, if true, flip all team score to below 50, else above 50
     :return: list of top 10 highest score matches
     :time complexity: O(N), where N is number of matches i.e. len(results)
-    :aux space complexity: O(N), dominant by "results", where N is number of matches i.e. len(results)
+    :aux space complexity: O(NM), dominant by "results", where M is number of character of team, i.e. len(team)
     """
     ret = results.copy() #O(N)
     for match in range(len(ret)): #O(N)
@@ -207,7 +208,7 @@ def radix_sort_ABC(results: List[List], roster: int, col: int):
     :time complexity: 
         O(MN), M times of count sort and count sort cost N
         where M is the number of character of team, i.e. len(team), N is number of matches i.e. len(results)
-    :aux space complexity: O(N), dominant by len(output) and len(results) 
+    :aux space complexity: O(NM), which is dominant by size of output, where M is number of character of team, i.e. len(team)
     """
     output = [0]*len(results)
 
@@ -245,12 +246,12 @@ def radix_sort_123(results: List[List], col: int =2) -> List:
         arg3: col, index of column to sort
     :return: list of matches which sorted according to score
     :time complexity: 
-        O(N), which is complexity of count sort
+        O(N), which is complexity of count sort, where N is number of matches i.e. len(results)
         number of times of count sort needed depends on highest digit of score,
         assuming high score is 100 and lowest score is 0,
         worst case 3 times of count sort is needed if at least one of the team score 100, which is 3 digits
         best case only 1 time of count sort is needed if all teams score <10, which is 1 digit
-    :aux space complexity: O(N) dominant by len(results)
+    :aux space complexity: O(NM) dominant by the size of output, where M is number of character of team, i.e. len(team)
     """
     roster = 10
     output = [0]*len(results)
