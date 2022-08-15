@@ -52,7 +52,7 @@ def analyse(results: List[List], roster: int, score: int) ->List[List]:
     """
 
     #sort team name in lexicographical order
-    results = sort_team(results, roster) #O(NM)
+    sort_team(results, roster) #O(NM)
 
     #sort according to team 
     results = radix_sort_ABC(results, roster, 0) #O(NM)
@@ -66,7 +66,7 @@ def analyse(results: List[List], roster: int, score: int) ->List[List]:
 
     return [top10matches, searchedmatches]
 
-def sort_team(results: List[List], roster: int) -> List:
+def sort_team(results: List[List], roster: int):
     """
     sort team name of all matches in lexicographical order
 
@@ -79,12 +79,9 @@ def sort_team(results: List[List], roster: int) -> List:
     :aux space complexity: O(NM), dominant by ret
 
     """
-    ret = results.copy() #O(N)
-
-    for match in range(len(ret)): #O(N)
+    for match in range(len(results)): #O(N)
         for team in range(2): #team1 & team2 O(1)
-            ret[match][team] = count_sort_team_char(results[match][team], roster) #sort team name, O(M)
-    return ret
+            results[match][team] = count_sort_team_char(results[match][team], roster) #sort team name, O(M)
 
 def count_sort_team_char(team: str, roster: int) -> str:
     """
@@ -128,29 +125,39 @@ def search_matches(results: List[List], score) -> List:
         arg1: results, results of matches 
         arg2: roster, number of possible letters
     :return: list of matches which score bigger or equal than target score
-    :time complexity: O(N), where N is number of matches i.e. len(results)
-    :aux space complexity: O(NM), dominant by "results", where M is number of character of team, i.e. len(team)
+    :time complexity: 
+        O(NM), loop through matches cost N and copy team cost M
+        where N is number of matches i.e. len(results), M is number of character of team, i.e. len(team)
+    :aux space complexity: O(NM), dominant by "results"
     """
     searchedmatches = [] #return list
 
-    #if target score <= 50 flip all matches score to <=50, else flip to >=50
-    results = flip_team_score(results, score<=50) 
+    #if target score < 50 flip all matches score to <50, else flip to >=50
     results = radix_sort_123(results)
 
     min_diff = 100 #difference between match score and target score
 
     #find minimum score difference 
     for match in results: #O(N)
-        diff = abs(match[2] - score) #calculate score difference 
-        if diff < min_diff:
+        diff = match[2] - score #calculate score difference 
+        if diff>=0 and diff < min_diff:
+            min_diff = diff
+        diff = 100 - match[2] - score
+        if diff>=0 and diff < min_diff:
             min_diff = diff
 
-    for match in results: #O(N)
-        if abs(match[2] - score) == min_diff and match[2]>=score:
-            if not searchedmatches: #add to return list if resturn list is empty
-                searchedmatches.append(match.copy())
-            elif match != searchedmatches[len(searchedmatches)-1]: #check if it's duplicated match
-                searchedmatches.append(match.copy())
+    for match in results: #O(N) 
+        if match[2] - score == min_diff:
+            #add to return list if resturn list is empty or it's not duplicated match
+            if not searchedmatches or match != searchedmatches[len(searchedmatches)-1]: 
+                searchedmatches.append(match.copy()) #O(M)
+
+        if 100 - match[2] - score == min_diff:
+            match[0], match[1] = match[1], match[0]
+            match[2] = 100 - match[2]
+
+            if not searchedmatches or match != searchedmatches[len(searchedmatches)-1]: 
+                searchedmatches.append(match.copy()) #O(M)
 
     return searchedmatches
 
@@ -162,23 +169,37 @@ def find_top10(results: List[List]) -> List:
     :input:
         arg1: results, results of matches 
     :return: list of top 10 highest score matches
-    :time complexity: O(N), where N is number of matches i.e. len(results)
-    :aux space complexity: O(NM), dominant by "results", where M is number of character of team, i.e. len(team)
+    :time complexity: 
+        O(NM), loop through "results" cost N, copy team cost M
+        where N is number of matches i.e. len(results) and M is number of character of team, i.e. len(team)
+    :aux space complexity: O(NM), dominant by "results", where 
     """
 
-    results = flip_team_score(results) #O(N)
+    flip_all_team_score(results, False) #O(N)
     results = radix_sort_123(results) #O(N)
 
+    #flip all score to > 50 and find top 10 team
     top10matches = []
-    for i in results: #O(N)
+    for i in range(len(results)): #O(N)
         if len(top10matches) >= 10:
             break
-        elif not top10matches or i != top10matches[len(top10matches)-1]: #if it's empty or not duplicate match
-            top10matches.append(i) #O(10) = O(1)
+        elif not top10matches or results[i] != top10matches[len(top10matches)-1]: #if it's empty or not duplicate match
+            top10matches.append(results[i].copy()) #O(M), copy cost M
+    
+    #if top10matches is less than 10, flip all team score to <50 
+    #and append top score matches to top10matches until top 10 mathches is found
+    if len(top10matches)<10:
+        flip_all_team_score(results, True)
+        for i in range(len(results)-1,-1,-1): #O(N)
+            if len(top10matches) >= 10:
+                break
+            elif not top10matches or results[i] != top10matches[len(top10matches)-1]: #if it's empty or not duplicate match
+                top10matches.append(results[i].copy()) #O(M), copy cost M
+    
 
     return top10matches
 
-def flip_team_score(results, below_50: bool = False)->List:
+def flip_all_team_score(results, below_50: bool = False)->List:
     """
     flip score of all team to below 50 or above 50
 
@@ -189,12 +210,11 @@ def flip_team_score(results, below_50: bool = False)->List:
     :time complexity: O(N), where N is number of matches i.e. len(results)
     :aux space complexity: O(NM), dominant by "results", where M is number of character of team, i.e. len(team)
     """
-    ret = results.copy() #O(N)
-    for match in range(len(ret)): #O(N)
-        if (ret[match][2]>50 and below_50) or (ret[match][2]<50 and not below_50):
-            ret[match][0], ret[match][1] = ret[match][1], ret[match][0]
-            ret[match][2] = 100 - ret[match][2]
-    return ret
+
+    for match in range(len(results)): #O(N)
+        if (results[match][2]>=50 and below_50) or (results[match][2]<50 and not below_50):
+            results[match][0], results[match][1] = results[match][1], results[match][0]
+            results[match][2] = 100 - results[match][2]
 
 def radix_sort_ABC(results: List[List], roster: int, col: int):
     """
